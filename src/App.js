@@ -20,6 +20,16 @@ const App = () => {
         today.setSeconds(0);
         today.setMilliseconds(0);
 
+        const addOriginCube = () => {
+          const cubeSize = 50;
+          const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+          const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+          const originCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+          originCube.position.set(window.innerWidth / 2, window.innerHeight / 2, 0);
+          world.current.add(originCube);
+          return originCube;
+      };
+      
         const init = () => {
             setupScene();
             setupWindowManager();
@@ -28,7 +38,7 @@ const App = () => {
             render();
             window.addEventListener('resize', resize);
         };
-
+        
         const setupScene = () => {
             camera.current.position.z = 2.5;
             scene.current.background = new THREE.Color(0.0);
@@ -36,7 +46,12 @@ const App = () => {
             renderer.current.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.current.domElement);
             scene.current.add(world.current);
+        
+            // Add origin cube for this window
+            const originCube = addOriginCube();
+            cubes.current.push(originCube);
         };
+      
 
         const setupWindowManager = () => {
             windowManager.current = new WindowManager();
@@ -48,16 +63,24 @@ const App = () => {
         };
 
         const render = () => {
-            windowManager.current.update();
-            let t = getTime();
-            let falloff = 0.05;
-            sceneOffset.current.x += (sceneOffsetTarget.current.x - sceneOffset.current.x) * falloff;
-            sceneOffset.current.y += (sceneOffsetTarget.current.y - sceneOffset.current.y) * falloff;
-            world.current.position.x = sceneOffset.current.x;
-            world.current.position.y = sceneOffset.current.y;
-            renderer.current.render(scene.current, camera.current);
-            requestAnimationFrame(render);
-        };
+          windowManager.current.update();
+          // let t = getTime();
+          let falloff = 0.05;
+          sceneOffset.current.x += (sceneOffsetTarget.current.x - sceneOffset.current.x) * falloff;
+          sceneOffset.current.y += (sceneOffsetTarget.current.y - sceneOffset.current.y) * falloff;
+          world.current.position.x = sceneOffset.current.x;
+          world.current.position.y = sceneOffset.current.y;
+      
+          // Rotate cubes
+          cubes.current.forEach(cube => {
+              cube.rotation.x += 0.01;
+              cube.rotation.y += 0.01;
+          });
+      
+          renderer.current.render(scene.current, camera.current);
+          requestAnimationFrame(render);
+      };
+      
 
         const resize = () => {
             camera.current.left = 0;
